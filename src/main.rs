@@ -66,13 +66,13 @@ impl eframe::App for ZackApp {
 }
 
 fn main() {
-    let matches = Command::new("Zack - plott CSV (-ish) streams in realtime")
-        .about("Plott CSV (-ish) streams in realtime")
+    let matches = Command::new("Zack - plot CSV (-ish) streams in realtime")
+        .about("Plot CSV (-ish) streams in realtime")
         .version(crate_version!())
         .arg(
             Arg::new("buf_length")
                 .help(
-                    "How many point of each channels should \
+                    "How many points of each channels should \
                      be displayed before dropping the oldest",
                 )
                 .short('b')
