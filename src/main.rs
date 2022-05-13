@@ -1,14 +1,27 @@
-use std::io::BufRead;
-use std::sync::mpsc::channel;
-use std::thread;
-
+use clap::{crate_version, Arg, Command};
 use eframe::NativeOptions;
+use std::sync::mpsc::channel;
 
+mod input;
 mod ui;
 
-use clap::{crate_version, Arg, Command};
+struct Opts {
+    buf_length: Box<usize>,
+}
 
 fn main() {
+    let opts = parse_opts();
+    let (sender, receiver) = channel();
+    input::stdin_reader(sender);
+
+    eframe::run_native(
+        "zack",
+        NativeOptions::default(),
+        Box::new(|cc| Box::new(ui::App::new(cc, receiver, opts.buf_length))),
+    );
+}
+
+fn parse_opts() -> Opts {
     let matches = Command::new("Zack - plot CSV (-ish) streams in realtime")
         .about("Plot CSV (-ish) streams in realtime")
         .version(crate_version!())
@@ -31,34 +44,5 @@ fn main() {
             .parse::<usize>()
             .expect("Buffer length needs to be a positiv integer"),
     );
-
-    let (sender, receiver) = channel();
-
-    thread::spawn(move || {
-        let stdin = std::io::stdin();
-        for line in stdin.lock().lines() {
-            match line {
-                Ok(s) => {
-                    // trim unwanted leading and trailing characters and split at one
-                    // of the possible seperators
-                    let sep = |c| c == ',' || c == ';' || c == ' ' || c == '\t';
-                    let s = s.trim_start_matches(sep);
-                    let s = s.trim_end_matches(sep);
-                    let str_chunks = s.split(sep).collect::<Vec<&str>>();
-                    let chunks = str_chunks
-                        .iter()
-                        .map(|y| y.parse::<f64>().unwrap_or(0.0))
-                        .collect();
-                    sender.send(chunks).unwrap();
-                }
-                _ => return,
-            }
-        }
-    });
-
-    eframe::run_native(
-        "zack",
-        NativeOptions::default(),
-        Box::new(|cc| Box::new(ui::App::new(cc, receiver, buf_length))),
-    );
+    Opts { buf_length }
 }
