@@ -1,5 +1,5 @@
 # zack
-Plot CSV (-ish) streams in realtime
+Plot numeric CSV (-ish) streams in real-time
 
 ## Installation
 
@@ -14,16 +14,19 @@ cargo install --path .
 ## Usage
 ```
 USAGE:
-    zack.exe [OPTIONS]
+    zack [OPTIONS]
 
 OPTIONS:
-    -b, --buffer <buf_length>    How many points of each channels should be displayed before dropping
-                                 the oldest [default: 10000]
+    -b, --buffer <buf_length>    How many points of each channels should be displayed before
+                                 dropping the oldest [default: 10000]
     -h, --help                   Print help information
+    -t, --tcp <host:port>        Tcp socket from where to read csv stream
     -V, --version                Print version information
 ```
 
 ## Examples
+
+### Pipe csv data via stdin into zack
 
 To generate random CSV test data from /dev/urandom, use hexdump and some format strings.
 ```
@@ -41,3 +44,14 @@ hexdump -e '4/1 "%d,"' -e'"\n"' /dev/urandom | zack --buffer 100
 ```
 Change the `--buffer` length if required.
 
+### Use tcp socket streaming
+
+In this example, the random numbers of the previous example are streamed using
+netcat on TCP port 5555.
+```
+hexdump -e '4/1 "%d,"' -e'"\n"' /dev/urandom | netcat -l -p 5555
+```
+Connect `zack` to the stream using the `-t` option:
+```
+zack -t localhost:5555
+```
