@@ -1,69 +1,12 @@
-use std::collections::VecDeque;
 use std::io::BufRead;
-use std::sync::mpsc::{channel, Receiver};
+use std::sync::mpsc::channel;
 use std::thread;
 
 use eframe::NativeOptions;
-use egui::{
-    plot::{Line, Plot, Value, Values},
-    Context,
-};
+
+mod ui;
 
 use clap::{crate_version, Arg, Command};
-
-struct ZackApp {
-    pub channels: Vec<VecDeque<Value>>,
-    receiver: Receiver<Vec<f64>>,
-    buffer_length: Box<usize>,
-    x: f64,
-}
-
-impl ZackApp {
-    fn new(
-        cc: &eframe::CreationContext<'_>,
-        receiver: Receiver<Vec<f64>>,
-        buffer_length: Box<usize>,
-    ) -> Self {
-        cc.egui_ctx.set_visuals(egui::Visuals::dark());
-        Self {
-            channels: vec![],
-            receiver,
-            x: 0.0,
-            buffer_length,
-        }
-    }
-}
-
-impl eframe::App for ZackApp {
-    fn update(&mut self, ctx: &Context, _: &mut eframe::Frame) {
-        egui::CentralPanel::default().show(ctx, |ui| {
-            let plot = Plot::new("measurements");
-            plot.show(ui, |plot_ui| {
-                for chunks in self.receiver.try_iter() {
-                    self.x += 1.0;
-                    while chunks.len() > self.channels.len() {
-                        self.channels.push(VecDeque::default());
-                        println!("Added channel nr. {}", self.channels.len());
-                    }
-                    for (i, ch) in self.channels.iter_mut().enumerate() {
-                        if ch.len() > *self.buffer_length {
-                            ch.pop_front();
-                        }
-
-                        ch.push_back(Value {
-                            x: self.x,
-                            y: chunks[i],
-                        });
-                    }
-                }
-                for ch in &self.channels {
-                    plot_ui.line(Line::new(Values::from_values_iter(ch.iter().copied())));
-                }
-            });
-        });
-        ctx.request_repaint();
-    }
-}
 
 fn main() {
     let matches = Command::new("Zack - plot CSV (-ish) streams in realtime")
@@ -116,6 +59,6 @@ fn main() {
     eframe::run_native(
         "zack",
         NativeOptions::default(),
-        Box::new(|cc| Box::new(ZackApp::new(cc, receiver, buf_length))),
+        Box::new(|cc| Box::new(ui::App::new(cc, receiver, buf_length))),
     );
 }
