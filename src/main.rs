@@ -1,4 +1,4 @@
-use clap::{crate_version, Arg, Command};
+use clap::{crate_version, value_parser, Arg, Command};
 use eframe::NativeOptions;
 use std::sync::mpsc::channel;
 
@@ -39,31 +39,30 @@ fn parse_opts() -> Opts {
             Arg::new("buf_length")
                 .help(
                     "How many points of each channels should \
-                     be displayed before dropping the oldest",
+                     be displayed before dropping the oldest.
+                     Has to be a power of 2",
                 )
                 .short('b')
                 .long("buffer")
-                .default_value("10000"),
+                .value_parser(value_parser!(u64).range(2..=(1 << 20)))
+                .default_value("65536"),
         )
         .arg(
             Arg::new("host:port")
                 .help("Tcp socket from where to read csv stream")
                 .required(false)
-                .takes_value(true)
                 .short('t')
                 .long("tcp"),
         )
         .get_matches();
 
     let buf_length = Box::new(
-        matches
-            .value_of("buf_length")
-            .expect("Invalid buffer length provided")
-            .parse::<usize>()
-            .expect("Buffer length needs to be a positiv integer"),
+        *matches
+            .get_one::<u64>("buf_length")
+            .expect("Invalid buffer length provided") as usize,
     );
 
-    let source = if let Some(tcp_socket) = matches.value_of("host:port") {
+    let source = if let Some(tcp_socket) = matches.get_one::<String>("host:port") {
         Source::TcpStream(tcp_socket.to_string())
     } else {
         Source::StdIn

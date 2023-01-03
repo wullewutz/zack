@@ -1,15 +1,14 @@
 use egui::{
-    plot::{Line, Plot, Value, Values},
+    plot::{Line, Plot, PlotPoints},
     Context, Ui,
 };
-use std::collections::VecDeque;
+use ringbuffer::{AllocRingBuffer, RingBufferExt, RingBufferWrite};
 use std::sync::mpsc::Receiver;
 
 pub struct App {
-    pub channels: Vec<(VecDeque<Value>, String)>,
+    pub channels: Vec<(AllocRingBuffer<f64>, String)>,
     receiver: Receiver<Vec<f64>>,
     buffer_length: Box<usize>,
-    x: f64,
     running: bool,
     windows: bool,
 }
@@ -24,7 +23,6 @@ impl App {
         Self {
             channels: vec![],
             receiver,
-            x: 0.0,
             buffer_length,
             running: true,
             windows: false,
@@ -33,10 +31,9 @@ impl App {
 
     fn receive_data(&mut self) {
         for mut chunks in self.receiver.try_iter() {
-            self.x += 1.0;
             while chunks.len() > self.channels.len() {
                 self.channels.push((
-                    VecDeque::default(),
+                    AllocRingBuffer::with_capacity(*self.buffer_length),
                     format!("Channel {}", self.channels.len()),
                 ));
                 println!("Added channel nr. {}", self.channels.len());
@@ -45,14 +42,7 @@ impl App {
                 chunks.push(0.0);
             }
             for (i, ch) in self.channels.iter_mut().enumerate() {
-                if ch.0.len() > *self.buffer_length {
-                    ch.0.pop_front();
-                }
-
-                ch.0.push_back(Value {
-                    x: self.x,
-                    y: chunks[i],
-                });
+                ch.0.push(chunks[i]);
             }
         }
     }
@@ -88,7 +78,7 @@ impl eframe::App for App {
                         let plot = Plot::new("measurements");
                         plot.show(ui, |plot_ui| {
                             plot_ui.line(
-                                Line::new(Values::from_values_iter(ch.0.iter().copied()))
+                                Line::new(PlotPoints::from_ys_f64(&ch.0.to_vec()))
                                     .color(egui::Color32::GREEN),
                             );
                         });
@@ -98,7 +88,7 @@ impl eframe::App for App {
                 let plot = Plot::new("measurements");
                 plot.show(ui, |plot_ui| {
                     for ch in &self.channels {
-                        plot_ui.line(Line::new(Values::from_values_iter(ch.0.iter().copied())));
+                        plot_ui.line(Line::new(PlotPoints::from_ys_f64(&ch.0.to_vec())));
                     }
                 });
             }
