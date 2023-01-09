@@ -1,5 +1,5 @@
 use egui::{
-    plot::{Line, Plot, PlotPoints},
+    plot::{Corner, Legend, Line, Plot, PlotPoints},
     Context, Ui,
 };
 use ringbuffer::{AllocRingBuffer, RingBufferExt, RingBufferWrite};
@@ -10,7 +10,7 @@ pub struct App {
     receiver: Receiver<Vec<f64>>,
     buffer_length: Box<usize>,
     running: bool,
-    windows: bool,
+    single_plot: bool,
 }
 
 impl App {
@@ -25,7 +25,7 @@ impl App {
             receiver,
             buffer_length,
             running: true,
-            windows: false,
+            single_plot: true,
         }
     }
 
@@ -58,7 +58,7 @@ impl App {
             .input_mut()
             .consume_key(egui::Modifiers::NONE, egui::Key::W)
         {
-            self.windows = !self.windows;
+            self.single_plot = !self.single_plot;
         }
     }
 }
@@ -72,23 +72,31 @@ impl eframe::App for App {
                 self.receive_data();
             }
 
-            if self.windows {
-                for ch in &self.channels {
-                    egui::Window::new(ch.1.to_owned()).show(ctx, |ui| {
-                        let plot = Plot::new("measurements");
-                        plot.show(ui, |plot_ui| {
-                            plot_ui.line(
-                                Line::new(PlotPoints::from_ys_f64(&ch.0.to_vec()))
-                                    .color(egui::Color32::GREEN),
-                            );
-                        });
-                    });
-                }
-            } else {
-                let plot = Plot::new("measurements");
+            if self.single_plot {
+                let plot =
+                    Plot::new("All_Channels").legend(Legend::default().position(Corner::RightTop));
                 plot.show(ui, |plot_ui| {
                     for ch in &self.channels {
-                        plot_ui.line(Line::new(PlotPoints::from_ys_f64(&ch.0.to_vec())));
+                        plot_ui.line(
+                            Line::new(PlotPoints::from_ys_f64(&ch.0.to_vec()))
+                                .name(ch.1.to_owned()),
+                        );
+                    }
+                });
+            } else {
+                egui::ScrollArea::both().show(ui, |ui| {
+                    for ch in &self.channels {
+                        let _plot = Plot::new(ch.1.to_owned())
+                            .legend(Legend::default().position(Corner::RightTop))
+                            .height(150.0)
+                            .allow_scroll(false)
+                            .show(ui, |plot_ui| {
+                                plot_ui.line(
+                                    Line::new(PlotPoints::from_ys_f64(&ch.0.to_vec()))
+                                        .color(egui::Color32::GREEN)
+                                        .name(ch.1.to_owned()),
+                                );
+                            });
                     }
                 });
             }
