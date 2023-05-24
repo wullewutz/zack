@@ -15,7 +15,7 @@ struct Opts {
     source: Source,
 }
 
-fn main() {
+fn main() -> eframe::Result<()> {
     let opts = parse_opts();
     let (sender, receiver) = channel();
 
@@ -28,7 +28,7 @@ fn main() {
         "zack",
         NativeOptions::default(),
         Box::new(|cc| Box::new(ui::App::new(cc, receiver, opts.buf_length))),
-    );
+    )
 }
 
 fn parse_opts() -> Opts {
