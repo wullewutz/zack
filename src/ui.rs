@@ -31,28 +31,31 @@ impl App {
 
     fn receive_data(&mut self) {
         for mut chunks in self.receiver.try_iter() {
-            // More chunks found than in previous rounds:
-            // Add a new channel and fill it with as many zeros as the first channel
-            while chunks.len() > self.channels.len() {
-                self.channels.push((
-                    AllocRingBuffer::with_capacity(*self.buffer_length),
-                    format!("Channel {}", self.channels.len()),
-                ));
-                if !self.channels.is_empty() {
-                    for _i in 0..self.channels.first().unwrap().0.len() {
-                        self.channels.last_mut().unwrap().0.push(0.0);
+            if chunks.len() != self.channels.len() {
+                // More chunks found than in previous rounds:
+                // Add a new channel and fill it with as many zeros as the first channel
+                while chunks.len() > self.channels.len() {
+                    self.channels.push((
+                        AllocRingBuffer::with_capacity(*self.buffer_length),
+                        format!("Channel {}", self.channels.len()),
+                    ));
+                    if !self.channels.is_empty() {
+                        for _i in 0..self.channels.first().unwrap().0.len() {
+                            self.channels.last_mut().unwrap().0.push(0.0);
+                        }
                     }
+                    println!("Added channel nr. {}", self.channels.len());
                 }
-                println!("Added channel nr. {}", self.channels.len());
+
+                // Less chunks found than in previous rounds:
+                // Missing chunks will be assumed to be zeros
+                while chunks.len() < self.channels.len() {
+                    chunks.push(0.0);
+                }
             }
 
-            // Less chunks found than in previous rounds:
-            // Missing chunks will be assumed to be zeros
-            while chunks.len() < self.channels.len() {
-                chunks.push(0.0);
-            }
-
-            // Finally, push new chunks to the channels
+            // Normal Case - as many chunks as there are channels:
+            // Push new chunks to the channels
             for (i, ch) in self.channels.iter_mut().enumerate() {
                 ch.0.push(chunks[i]);
             }
@@ -110,8 +113,8 @@ impl eframe::App for App {
                             .height(plot_height)
                             .min_size(egui::Vec2::new(300.0, 200.0))
                             .allow_scroll(false)
-                            .link_axis(link_group_id, true, true)
-                            .link_cursor(link_group_id, true, true)
+                            .link_axis(link_group_id, true, false)
+                            .link_cursor(link_group_id, true, false)
                             .show(ui, |plot_ui| {
                                 plot_ui.line(l.color(egui::Color32::GREEN));
                             });
