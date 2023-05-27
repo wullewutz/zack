@@ -38,8 +38,8 @@ fn parse_opts() -> Opts {
         .arg(
             Arg::new("buf_length")
                 .help(
-                    "How many points of each channels should \
-                     be displayed before dropping the oldest.
+                    "How many points of each channels should\n\
+                     be displayed before dropping the oldest.\n\
                      Has to be a power of 2",
                 )
                 .short('b')
