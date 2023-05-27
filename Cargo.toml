@@ -9,4 +9,4 @@ edition = "2021"
 clap = {version = "4", features = ["cargo"]}
 egui = "0.22"
 eframe = "0.22"
-ringbuffer = "0.11.1"
+ringbuffer = "0.13.0"

@@ -628,15 +628,6 @@ dependencies = [
 ]
 
 [[package]]
-name = "const_panic"
-version = "0.2.8"
-source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "6051f239ecec86fde3410901ab7860d458d160371533842974fc61f96d15879b"
-dependencies = [
- "typewit",
-]
-
-[[package]]
 name = "core-foundation"
 version = "0.9.3"
 source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -1824,12 +1815,9 @@ checksum = "436b050e76ed2903236f032a59761c1eb99e1b0aead2c257922771dab1fc8c78"
 
 [[package]]
 name = "ringbuffer"
-version = "0.11.1"
+version = "0.13.0"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "034f2f6835eab90a8942169db360776272fe3fce9eb13b9bdefaceea67cabd68"
-dependencies = [
- "const_panic",
-]
+checksum = "b6e4fbb37fd18bd949f42583141d650fcdce49dbf759264e4dd3a5df0bc15dc6"
 
 [[package]]
 name = "rustix"
@@ -2188,12 +2176,6 @@ name = "typenum"
 version = "1.16.0"
 source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "497961ef93d974e23eb6f433eb5fe1b7930b659f06d12dec6fc44a8f554c0bba"
-
-[[package]]
-name = "typewit"
-version = "1.2.0"
-source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "e6dd02a681cb0fac6d36a5a5f8fa07dfd7913c47cb06bbdc3470688e1d86ff6a"
 
 [[package]]
 name = "uds_windows"
