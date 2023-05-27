@@ -96,13 +96,13 @@ impl eframe::App for App {
             let lines = self.lines();
 
             if self.single_plot {
-                let plot =
-                    Plot::new("all_plot").legend(Legend::default().position(Corner::LeftTop));
-                plot.show(ui, |plot_ui| {
-                    for l in lines {
-                        plot_ui.line(l);
-                    }
-                });
+                Plot::new("all_plots")
+                    .legend(Legend::default().position(Corner::LeftTop))
+                    .show(ui, |plot_ui| {
+                        for l in lines {
+                            plot_ui.line(l);
+                        }
+                    });
             } else {
                 let plot_height = ui.available_height() / self.channels.len() as f32;
                 egui::ScrollArea::both().show(ui, |ui| {
