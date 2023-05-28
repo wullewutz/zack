@@ -46,7 +46,7 @@ fn parse_opts() -> Opts {
                 .short('b')
                 .long("buffer")
                 .value_parser(value_parser!(u64).range(2..=(1 << 20)))
-                .default_value("65536"),
+                .default_value("16384"),
         )
         .arg(
             Arg::new("host:port")
