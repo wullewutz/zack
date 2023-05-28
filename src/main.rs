@@ -13,6 +13,7 @@ enum Source {
 struct Opts {
     buf_length: Box<usize>,
     source: Source,
+    names: Vec<String>,
 }
 
 fn main() -> eframe::Result<()> {
@@ -27,7 +28,7 @@ fn main() -> eframe::Result<()> {
     eframe::run_native(
         "zack",
         NativeOptions::default(),
-        Box::new(|cc| Box::new(ui::App::new(cc, receiver, opts.buf_length))),
+        Box::new(|cc| Box::new(ui::App::new(cc, receiver, opts.buf_length, opts.names))),
     )
 }
 
@@ -54,6 +55,18 @@ fn parse_opts() -> Opts {
                 .short('t')
                 .long("tcp"),
         )
+        .arg(
+            Arg::new("chan_names")
+                .help(
+                    "Comma/semicolon/space separated list of channel names\n\
+                     Enclose list in quotes if using space or semicolon for separation!\n\
+                     Example:     --names first,second,third\n\
+                     Equivalent:  --names \"first second;third\"",
+                )
+                .required(false)
+                .short('n')
+                .long("names"),
+        )
         .get_matches();
 
     let buf_length = Box::new(
@@ -62,10 +75,21 @@ fn parse_opts() -> Opts {
             .expect("Invalid buffer length provided") as usize,
     );
 
+    let names: Vec<String> = if let Some(chan_names) = matches.get_one::<String>("chan_names") {
+        let sep = |c| c == ',' || c == ';' || c == ' ';
+        chan_names.split(sep).map(|s| s.to_string()).collect()
+    } else {
+        vec![]
+    };
+
     let source = if let Some(tcp_socket) = matches.get_one::<String>("host:port") {
         Source::TcpStream(tcp_socket.to_string())
     } else {
         Source::StdIn
     };
-    Opts { buf_length, source }
+    Opts {
+        buf_length,
+        source,
+        names,
+    }
 }

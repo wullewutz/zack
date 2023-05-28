@@ -18,10 +18,16 @@ impl App {
         cc: &eframe::CreationContext<'_>,
         receiver: Receiver<Vec<f64>>,
         buffer_length: Box<usize>,
+        names: Vec<String>,
     ) -> Self {
         cc.egui_ctx.set_visuals(egui::Visuals::dark());
+        let mut channels: Vec<(AllocRingBuffer<f64>, String)> = vec![];
+        for name in names {
+            channels.push((AllocRingBuffer::with_capacity(*buffer_length), name.clone()));
+            println!("Added channel \"{}\"", name);
+        }
         Self {
-            channels: vec![],
+            channels,
             receiver,
             buffer_length,
             running: true,
