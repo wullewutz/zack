@@ -68,12 +68,15 @@ impl App {
         }
     }
 
-    fn keys_event_loop(&mut self, ctx: &Context) {
+    fn keys_event_loop(&mut self, ctx: &Context, frame: &mut eframe::Frame) {
         if ctx.input(|i| i.key_pressed(egui::Key::Space)) {
             self.running = !self.running;
         }
         if ctx.input(|i| i.key_pressed(egui::Key::W)) {
             self.single_plot = !self.single_plot;
+        }
+        if ctx.input(|i| i.key_pressed(egui::Key::Q)) {
+            frame.close();
         }
     }
 
@@ -91,9 +94,31 @@ impl App {
 }
 
 impl eframe::App for App {
-    fn update(&mut self, ctx: &Context, _: &mut eframe::Frame) {
+    fn update(&mut self, ctx: &Context, frame: &mut eframe::Frame) {
+        egui::TopBottomPanel::top("top_panel").show(ctx, |ui| {
+            // The top panel is often a good place for a menu bar:
+            egui::menu::bar(ui, |ui| {
+                ui.menu_button("File", |ui| {
+                    if ui.button("Exit").clicked() {
+                        frame.close();
+                    }
+                });
+                ui.menu_button("View", |ui| {
+                    //if ui.radio_value("Windows").clicked() {
+                    ui.radio_value(&mut self.single_plot, true, "Single Plot");
+                    ui.radio_value(&mut self.single_plot, false, "Stacked");
+                });
+            });
+        });
+
+        egui::TopBottomPanel::bottom("bottom_panel").show(ctx, |ui| {
+            ui.with_layout(egui::Layout::right_to_left(egui::Align::Min), |ui| {
+                egui::widgets::global_dark_light_mode_switch(ui);
+            })
+        });
+
         egui::CentralPanel::default().show(ctx, |ui| {
-            self.keys_event_loop(ctx);
+            self.keys_event_loop(ctx, frame);
 
             if self.running {
                 self.receive_data();
