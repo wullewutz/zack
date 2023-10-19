@@ -1,7 +1,5 @@
-use egui::{
-    plot::{Corner, Legend, Line, Plot, PlotPoints},
-    Context,
-};
+use egui::Context;
+use egui_plot::{Corner, Legend, Line, Plot, PlotPoints};
 use ringbuffer::{AllocRingBuffer, RingBuffer, RingBufferExt, RingBufferWrite};
 use std::sync::mpsc::Receiver;
 

@@ -7,6 +7,7 @@ edition = "2021"
 
 [dependencies]
 clap = {version = "4", features = ["cargo"]}
-egui = "0.22"
-eframe = "0.22"
+egui = "0.23"
+egui_plot = "0.23.0"
+eframe = "0.23"
 ringbuffer = "0.13.0"
