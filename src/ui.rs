@@ -9,6 +9,7 @@ pub struct App {
     buffer_length: Box<usize>,
     running: bool,
     single_plot: bool,
+    show_keymap: bool,
 }
 
 impl App {
@@ -30,6 +31,7 @@ impl App {
             buffer_length,
             running: true,
             single_plot: true,
+            show_keymap: false,
         }
     }
 
@@ -76,6 +78,9 @@ impl App {
         if ctx.input(|i| i.key_pressed(egui::Key::Q)) {
             frame.close();
         }
+        if ctx.input(|i| i.key_pressed(egui::Key::H)) {
+            self.show_keymap = !self.show_keymap;
+        }
     }
 
     fn lines(&self) -> Vec<Line> {
@@ -102,10 +107,27 @@ impl eframe::App for App {
                     }
                 });
                 ui.menu_button("View", |ui| {
-                    //if ui.radio_value("Windows").clicked() {
                     ui.radio_value(&mut self.single_plot, true, "Single Plot");
                     ui.radio_value(&mut self.single_plot, false, "Stacked");
+                    egui::widgets::global_dark_light_mode_buttons(ui);
                 });
+
+                ui.menu_button("Help", |ui| {
+                    if ui.button("Keymap").clicked() {
+                        self.show_keymap = !self.show_keymap;
+                    }
+                });
+
+                if self.show_keymap {
+                    egui::Window::new("Keymap")
+                        .default_pos([300.0, 300.0])
+                        .show(ctx, |ui| {
+                            ui.label("w -> Toggle single/multi plot");
+                            ui.label("h -> Show this help screen");
+                            ui.label("space -> Pause/Resume");
+                            ui.label("q -> Quit zack");
+                        });
+                }
             });
         });
 
