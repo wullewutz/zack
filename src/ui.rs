@@ -122,9 +122,9 @@ impl eframe::App for App {
                     egui::Window::new("Keymap")
                         .default_pos([300.0, 300.0])
                         .show(ctx, |ui| {
+                            ui.label("space -> Pause/Resume");
                             ui.label("w -> Toggle single/multi plot");
                             ui.label("h -> Show this help screen");
-                            ui.label("space -> Pause/Resume");
                             ui.label("q -> Quit zack");
                         });
                 }
