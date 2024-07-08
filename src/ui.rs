@@ -72,6 +72,9 @@ impl App {
         if ctx.input(|i| i.key_pressed(egui::Key::Space)) {
             self.running = !self.running;
         }
+        if ctx.input(|i| i.key_pressed(egui::Key::C)) {
+            self.clean();
+        }
         if ctx.input(|i| i.key_pressed(egui::Key::W)) {
             self.single_plot = !self.single_plot;
         }
@@ -93,6 +96,12 @@ impl App {
             );
         }
         lines
+    }
+
+    fn clean(&mut self) {
+        for ch in &mut self.channels {
+            ch.0.clear();
+        }
     }
 }
 
@@ -122,10 +131,11 @@ impl eframe::App for App {
                     egui::Window::new("Keymap")
                         .default_pos([300.0, 300.0])
                         .show(ctx, |ui| {
-                            ui.label("space -> Pause/Resume");
-                            ui.label("w -> Toggle single/multi plot");
-                            ui.label("h -> Show this help screen");
-                            ui.label("q -> Quit zack");
+                            ui.label("space:\tPause/Resume");
+                            ui.label("c:\tClear current plots");
+                            ui.label("w:\tToggle single/multi plot view");
+                            ui.label("h:\tShow this help screen");
+                            ui.label("q:\tQuit zack");
                         });
                 }
             });
