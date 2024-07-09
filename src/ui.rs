@@ -144,6 +144,11 @@ impl eframe::App for App {
         egui::TopBottomPanel::bottom("bottom_panel").show(ctx, |ui| {
             ui.with_layout(egui::Layout::right_to_left(egui::Align::Min), |ui| {
                 egui::widgets::global_dark_light_mode_switch(ui);
+                if self.running {
+                    ui.label("running");
+                } else {
+                    ui.label("paused");
+                }
             })
         });
 
