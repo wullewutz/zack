@@ -1,4 +1,4 @@
-use egui::Context;
+use egui::{Color32, Context, RichText};
 use egui_plot::{Corner, Legend, Line, Plot, PlotPoints};
 use ringbuffer::{AllocRingBuffer, RingBuffer, RingBufferExt, RingBufferWrite};
 use std::sync::mpsc::Receiver;
@@ -145,9 +145,9 @@ impl eframe::App for App {
             ui.with_layout(egui::Layout::right_to_left(egui::Align::Min), |ui| {
                 egui::widgets::global_dark_light_mode_switch(ui);
                 if self.running {
-                    ui.label("running");
+                    ui.label(RichText::new("running").color(Color32::GREEN));
                 } else {
-                    ui.label("paused");
+                    ui.label(RichText::new("paused").color(Color32::RED));
                 }
             })
         });
