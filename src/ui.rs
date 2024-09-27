@@ -1,6 +1,6 @@
-use egui::{Color32, Context, RichText};
+use egui::{Color32, Context, RichText, ViewportCommand};
 use egui_plot::{Corner, Legend, Line, Plot, PlotPoints};
-use ringbuffer::{AllocRingBuffer, RingBuffer, RingBufferExt, RingBufferWrite};
+use ringbuffer::{AllocRingBuffer, RingBuffer};
 use std::sync::mpsc::Receiver;
 
 pub struct App {
@@ -22,7 +22,7 @@ impl App {
         cc.egui_ctx.set_visuals(egui::Visuals::dark());
         let mut channels: Vec<(AllocRingBuffer<f64>, String)> = vec![];
         for name in names {
-            channels.push((AllocRingBuffer::with_capacity(*buffer_length), name.clone()));
+            channels.push((AllocRingBuffer::new(*buffer_length), name.clone()));
             println!("Added channel \"{}\"", name);
         }
         Self {
@@ -42,7 +42,7 @@ impl App {
                 // Add a new channel and fill it with as many zeros as the first channel
                 while chunks.len() > self.channels.len() {
                     self.channels.push((
-                        AllocRingBuffer::with_capacity(*self.buffer_length),
+                        AllocRingBuffer::new(*self.buffer_length),
                         format!("Channel {}", self.channels.len()),
                     ));
                     if !self.channels.is_empty() {
@@ -68,7 +68,7 @@ impl App {
         }
     }
 
-    fn keys_event_loop(&mut self, ctx: &Context, frame: &mut eframe::Frame) {
+    fn keys_event_loop(&mut self, ctx: &Context) {
         if ctx.input(|i| i.key_pressed(egui::Key::Space)) {
             self.running = !self.running;
         }
@@ -79,7 +79,7 @@ impl App {
             self.single_plot = !self.single_plot;
         }
         if ctx.input(|i| i.key_pressed(egui::Key::Q)) {
-            frame.close();
+            ctx.send_viewport_cmd(ViewportCommand::Close);
         }
         if ctx.input(|i| i.key_pressed(egui::Key::H)) {
             self.show_keymap = !self.show_keymap;
@@ -106,19 +106,19 @@ impl App {
 }
 
 impl eframe::App for App {
-    fn update(&mut self, ctx: &Context, frame: &mut eframe::Frame) {
+    fn update(&mut self, ctx: &Context, _: &mut eframe::Frame) {
         egui::TopBottomPanel::top("top_panel").show(ctx, |ui| {
             // The top panel is often a good place for a menu bar:
             egui::menu::bar(ui, |ui| {
                 ui.menu_button("File", |ui| {
                     if ui.button("Exit").clicked() {
-                        frame.close();
+                        ctx.send_viewport_cmd(ViewportCommand::Close);
                     }
                 });
                 ui.menu_button("View", |ui| {
                     ui.radio_value(&mut self.single_plot, true, "Single Plot");
                     ui.radio_value(&mut self.single_plot, false, "Stacked");
-                    egui::widgets::global_dark_light_mode_buttons(ui);
+                    egui::widgets::global_theme_preference_buttons(ui);
                 });
 
                 ui.menu_button("Help", |ui| {
@@ -143,7 +143,7 @@ impl eframe::App for App {
 
         egui::TopBottomPanel::bottom("bottom_panel").show(ctx, |ui| {
             ui.with_layout(egui::Layout::right_to_left(egui::Align::Min), |ui| {
-                egui::widgets::global_dark_light_mode_switch(ui);
+                egui::widgets::global_theme_preference_buttons(ui);
                 if self.running {
                     ui.label(RichText::new("running").color(Color32::GREEN));
                 } else {
@@ -153,7 +153,7 @@ impl eframe::App for App {
         });
 
         egui::CentralPanel::default().show(ctx, |ui| {
-            self.keys_event_loop(ctx, frame);
+            self.keys_event_loop(ctx);
 
             if self.running {
                 self.receive_data();

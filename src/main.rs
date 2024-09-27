@@ -28,7 +28,14 @@ fn main() -> eframe::Result<()> {
     eframe::run_native(
         "zack",
         NativeOptions::default(),
-        Box::new(|cc| Box::new(ui::App::new(cc, receiver, opts.buf_length, opts.names))),
+        Box::new(|cc| {
+            Ok(Box::new(ui::App::new(
+                cc,
+                receiver,
+                opts.buf_length,
+                opts.names,
+            )))
+        }),
     )
 }
 
