@@ -143,7 +143,7 @@ impl eframe::App for App {
 
         egui::TopBottomPanel::bottom("bottom_panel").show(ctx, |ui| {
             ui.with_layout(egui::Layout::right_to_left(egui::Align::Min), |ui| {
-                egui::widgets::global_theme_preference_buttons(ui);
+                egui::widgets::global_theme_preference_switch(ui);
                 if self.running {
                     ui.label(RichText::new("running").color(Color32::GREEN));
                 } else {
